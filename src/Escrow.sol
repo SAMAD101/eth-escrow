@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity >=0.8.13;
 
 event Deposited(address indexed _from, uint _value);
 event claimed(address indexed _to, uint _value);

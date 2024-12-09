@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {Escrow} from "../src/Escrow.sol";
 
-contract EscrowTest is Test {
-
+contract EscrowScript is Script {
+    
 }

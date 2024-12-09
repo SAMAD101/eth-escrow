@@ -1,66 +1,17 @@
-## Foundry
+# eth-escrow
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A gas efficient solidity smart contract for an escrow on ethereum. Supports ERC20 tokens.
 
-Foundry consists of:
+## Features:
+- Allows the sender to designate a set amount of ETH (or an ERC20 token).
+- The recipient user can claim or refund back to the sender the designated amount of ETH (or an ERC20 token).
+- Unclaimed funds automatically gets refunded back to the sender.
+- Upgradable contract...
+- Role-based access control...
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## Implementation:
+- Uses [Foundary framework](https://book.getfoundry.sh/) for development and testing
+- Uses [OpenZeppelin](https://www.openzeppelin.com/)...
+- Comprehensive test suite
+- Secure, maintainable, and modular Solidity code, with great organization of code
+- Follows best practices and style guide for Solidity
