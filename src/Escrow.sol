@@ -12,7 +12,7 @@ contract Escrow {
         uint amount;
         address sender;
         address recipient;
-    }    
+    }
 
     function deposit(uint amount) public payable{
         
