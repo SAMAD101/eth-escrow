@@ -14,7 +14,7 @@ contract BaseContract is Initializable {
     }
 }
 
-contract Escrow is BaseContract {
+contract EscrowContract is BaseContract {
     uint256 public x;
 
     function initialize(uint256 _x) public initializer {
