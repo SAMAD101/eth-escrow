@@ -1,29 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.13;
+pragma solidity ^0.8.20;
 
-import {ERC20} from "lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
+import "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 
-event Deposited(address indexed _from, uint _value);
-event claimed(address indexed _to, uint _value);
 
-contract Escrow {
-    address payable public sender;
-    address payable public recipient;
+contract BaseContract is Initializable {
+    bool private initialized;
 
-    struct Vault {
-        uint amount;
-        address sender;
-        address recipient;
+    function initialize() public onlyInitializing {
+        require(!initialized, "Contract instance has already been initialized");
+        initialized = true;
     }
+}
 
-    function deposit(uint amount) public payable{
-        
+contract EscrowContract is BaseContract {
+    uint256 public x;
 
-        emit Deposited(msg.sender, msg.value);
-    }
-
-    function withdraw() public payable {
-        
-        emit claimed(msg.sender, msg.value);
+    function initialize(uint256 _x) public initializer {
+        BaseContract.initialize();
+        x = _x;
     }
 }
