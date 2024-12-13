@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@openzeppelin/defender-sdk": "^1.15.2"
+  }
+}
