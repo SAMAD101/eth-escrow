@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
 import {Script} from "lib/forge-std/src/Script.sol";
@@ -19,7 +20,7 @@ contract DefenderScript is Script {
         }
 
         Options memory opts;
-        opts.defender.useDefenderDeploy = true;
+        opts.defender.useDefenderDeploy = false;
 
         address proxy = Upgrades.deployUUPSProxy(
             "Escrow.sol",
