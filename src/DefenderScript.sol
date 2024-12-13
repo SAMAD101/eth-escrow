@@ -1,12 +1,12 @@
 pragma solidity ^0.8.20;
 
-import {Script} from "forge-std/Script.sol";
-import {console} from "forge-std/console.sol";
+import {Script} from "lib/forge-std/src/Script.sol";
+import {console} from "lib/forge-std/src/console.sol";
 
-import {Defender, ApprovalProcessResponse} from "openzeppelin-foundry-upgrades/Defender.sol";
-import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+import {Defender, ApprovalProcessResponse} from "lib/openzeppelin-foundry-upgrades/src/Defender.sol";
+import {Upgrades, Options} from "lib/openzeppelin-foundry-upgrades/src/Upgrades.sol";
 
-import {Escrow} from "../src/Escrow.sol";
+import {EscrowContract} from "../src/Escrow.sol";
 
 contract DefenderScript is Script {
     function setUp() public {}
@@ -22,8 +22,8 @@ contract DefenderScript is Script {
         opts.defender.useDefenderDeploy = true;
 
         address proxy = Upgrades.deployUUPSProxy(
-            "Escrow.sol",
-            abi.encodeCall(MyContract.initialize, ("Hello World", upgradeApprovalProcess.via)),
+            "EscrowContract.sol",
+            abi.encodeCall(EscrowContract.initialize, (uint256(3))),
             opts
         );
 
