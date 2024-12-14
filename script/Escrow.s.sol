@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Escrow} from "../src/Escrow.sol";
+import {EscrowContract} from "src/Escrow.sol";
 
 contract EscrowScript is Script {
     

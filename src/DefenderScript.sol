@@ -24,7 +24,7 @@ contract DefenderScript is Script {
 
         address proxy = Upgrades.deployUUPSProxy(
             "Escrow.sol:EscrowContract",
-            abi.encodeCall(EscrowContract.initialize, (uint256(3))),
+            abi.encodeCall(EscrowContract.initialize, (payable(msg.sender))),
             opts
         );
 
