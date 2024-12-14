@@ -7,7 +7,7 @@ import {console} from "lib/forge-std/src/console.sol";
 import {Defender, ApprovalProcessResponse} from "lib/openzeppelin-foundry-upgrades/src/Defender.sol";
 import {Upgrades, Options} from "lib/openzeppelin-foundry-upgrades/src/Upgrades.sol";
 
-import {EscrowContract} from "src/Escrow.sol";
+import {EscrowContract} from "./Escrow.sol";
 
 contract DefenderScript is Script {
     function setUp() public {}
