@@ -12,7 +12,7 @@ contract BaseContract is
     OwnableUpgradeable,
     PausableUpgradeable,
     ReentrancyGuardUpgradeable,
-    AutomationCompatibleUpgradeable
+    AutomationCompatible
 {
     error InvalidAddress();
     error ZeroAmount();
@@ -23,9 +23,12 @@ contract BaseContract is
     error TransferFailed();
 
     uint256 constant public CLAIM_TIMEOUT = 30 days;
+    
+    bool public initialized;
 
     function initialize(address initialOwner) public onlyInitializing {
         require(!initialized, "Contract instance has already been initialized");
+        initialized = true;
         __UUPSUpgradeable_init();
         __Ownable_init(initialOwner);
         __Pausable_init();
