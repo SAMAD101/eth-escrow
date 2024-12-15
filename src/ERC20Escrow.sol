@@ -18,6 +18,7 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
 
     bytes32[] public activeEscrows;
     mapping(bytes32 => TokenEscrow) public escrows;
+    mapping(bytes32 => uint256) public escrowIdToIndex;
     uint256 public escrowCount;
 
     event TokenEscrowCreated(
@@ -36,7 +37,10 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
     }
 
     function initialize(address initialOwner) public initializer {
-        BaseContract.initialize(initialOwner);
+        __UUPSUpgradeable_init();
+        __Ownable_init(initialOwner);
+        __Pausable_init();
+        __ReentrancyGuard_init();
     }
 
     function createTokenEscrow(
@@ -54,12 +58,9 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
                 _receiver,
                 _tokenAddress,
                 _amount,
-                block.timestamp,
-                escrowCount
+                block.timestamp
             )
         );
-
-        unchecked {escrowCount++;}
 
         // transferFrom tokens from sender to this contract
         ERC20Upgradeable token = ERC20Upgradeable(_tokenAddress);
@@ -75,7 +76,9 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
             isRefunded: false,
             createdAt: block.timestamp
         });
+        escrowIdToIndex[escrowId] = activeEscrows.length;
         activeEscrows.push(escrowId);
+        escrowCount++;
 
         emit TokenEscrowCreated(escrowId, msg.sender, _receiver, _tokenAddress, _amount);
         return escrowId;
@@ -88,7 +91,7 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
         returns (bool upkeepNeeded, bytes memory performData) {
         for (uint i = 0; i < activeEscrows.length; i++) {
             bytes32 escrowId = activeEscrows[i];
-            Escrow storage escrow = escrows[escrowId];
+            TokenEscrow storage escrow = escrows[escrowId];
             if (!escrow.isClaimed && !escrow.isRefunded && 
                 block.timestamp > escrow.createdAt + CLAIM_TIMEOUT) {
                 return (true, abi.encode(escrowId));
@@ -99,7 +102,7 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
 
     function performUpkeep(bytes calldata performData) external override {
         bytes32 escrowId = abi.decode(performData, (bytes32));
-        Escrow storage escrow = escrows[escrowId];
+        TokenEscrow storage escrow = escrows[escrowId];
 
         if (msg.sender != escrow.sender) revert OnlySender();
         if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
@@ -111,14 +114,17 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
         if (!success) revert TransferFailed();
         
         // Remove from active escrows
-        uint256 index = escrows[escrowId];
-        bytes32 lastEscrowId = activeEscrows[activeEscrows.length - 1];
-        activeEscrows[index] = lastEscrowId;
-        escrows[lastEscrowId] = index;
+        uint256 index = escrowIdToIndex[escrowId];
+        uint256 lastIndex = activeEscrows.length - 1;
+        if (index != lastIndex) {
+            bytes32 lastEscrowId = activeEscrows[lastIndex];
+            activeEscrows[index] = lastEscrowId;
+            escrowIdToIndex[lastEscrowId] = index;
+        }
         activeEscrows.pop();
 
         escrow.isRefunded = true;
-        emit EscrowRefunded(escrowId);
+        emit TokenEscrowRefunded(escrowId);
     }
 
     function claimTokenEscrow(bytes32 _escrowId) external nonReentrant whenNotPaused {
@@ -130,6 +136,16 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
         ERC20Upgradeable token = ERC20Upgradeable(escrow.tokenAddress);
         bool success = token.transfer(escrow.receiver, escrow.amount);
         if (!success) revert TransferFailed();
+
+        // remove escrow from activeEscrows
+        uint256 index = escrowIdToIndex[_escrowId];
+        uint256 lastIndex = activeEscrows.length - 1;
+        if (index != lastIndex) {
+            bytes32 lastEscrowId = activeEscrows[lastIndex];
+            activeEscrows[index] = lastEscrowId;
+            escrowIdToIndex[lastEscrowId] = index;
+        }
+        activeEscrows.pop();
 
         escrow.isClaimed = true;
         emit TokenEscrowClaimed(_escrowId);

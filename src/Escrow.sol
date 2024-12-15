@@ -15,6 +15,7 @@ contract EscrowContract is BaseContract {
 
     bytes32[] public activeEscrows;
     mapping(bytes32 => Escrow) public escrows;
+    mapping(bytes32 => uint256) public escrowIdToIndex;
     uint256 public escrowCount;
 
     event EscrowCreated(
@@ -32,7 +33,10 @@ contract EscrowContract is BaseContract {
     }
 
     function initialize(address initialOwner) public initializer {
-        BaseContract.initialize(initialOwner);
+        __UUPSUpgradeable_init();
+        __Ownable_init(initialOwner);
+        __Pausable_init();
+        __ReentrancyGuard_init();
     }
 
     function createEscrow(
@@ -46,12 +50,9 @@ contract EscrowContract is BaseContract {
                 msg.sender,
                 _receiver,
                 msg.value,
-                block.timestamp,
-                escrowCount
+                block.timestamp
             )
         );
-
-        unchecked {escrowCount++;}
 
         escrows[escrowId] = Escrow({
             sender: payable(msg.sender),
@@ -61,7 +62,9 @@ contract EscrowContract is BaseContract {
             isRefunded: false,
             createdAt: block.timestamp
         });
+        escrowIdToIndex[escrowId] = activeEscrows.length;
         activeEscrows.push(escrowId);
+        escrowCount++;
 
         emit EscrowCreated(escrowId, msg.sender, _receiver, msg.value);
         return escrowId;
@@ -96,10 +99,13 @@ contract EscrowContract is BaseContract {
         if (!success) revert TransferFailed();
         
         // Remove from active escrows
-        uint256 index = escrows[escrowId];
-        bytes32 lastEscrowId = activeEscrows[activeEscrows.length - 1];
-        activeEscrows[index] = lastEscrowId;
-        escrows[lastEscrowId] = index;
+        uint256 index = escrowIdToIndex[escrowId];
+        uint256 lastIndex = activeEscrows.length - 1;
+        if (index != lastIndex) {
+            bytes32 lastEscrowId = activeEscrows[lastIndex];
+            activeEscrows[index] = lastEscrowId;
+            escrowIdToIndex[lastEscrowId] = index;
+        }
         activeEscrows.pop();
 
         escrow.isRefunded = true;
@@ -116,10 +122,13 @@ contract EscrowContract is BaseContract {
         if (!success) revert TransferFailed();
 
         // remove escrow from activeEscrows
-        uint256 index = escrows[escrowId];
-        bytes32 lastEscrowId = activeEscrows[activeEscrows.length - 1];
-        activeEscrows[index] = lastEscrowId;
-        escrows[lastEscrowId] = index;
+        uint256 index = escrowIdToIndex[_escrowId];
+        uint256 lastIndex = activeEscrows.length - 1;
+        if (index != lastIndex) {
+            bytes32 lastEscrowId = activeEscrows[lastIndex];
+            activeEscrows[index] = lastEscrowId;
+            escrowIdToIndex[lastEscrowId] = index;
+        }
         activeEscrows.pop();
 
         escrow.isClaimed = true;

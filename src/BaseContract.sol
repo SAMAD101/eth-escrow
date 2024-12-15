@@ -5,14 +5,14 @@ import "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgrade
 import "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "lib/openzeppelin-contracts-upgradeable/contracts/utils/PausableUpgradeable.sol";
 import "lib/openzeppelin-contracts-upgradeable/contracts/utils/ReentrancyGuardUpgradeable.sol";
-import "lib/chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+import "lib/chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 
 contract BaseContract is 
     UUPSUpgradeable,
     OwnableUpgradeable,
     PausableUpgradeable,
     ReentrancyGuardUpgradeable,
-    AutomationCompatible
+    AutomationCompatibleInterface
 {
     error InvalidAddress();
     error ZeroAmount();
@@ -26,17 +26,19 @@ contract BaseContract is
     uint256 constant public CLAIM_TIMEOUT = 30 days;
     
     bool public initialized;
+    
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-    function initialize(address initialOwner) public onlyInitializing {
-        require(!initialized, "Contract instance has already been initialized");
-        initialized = true;
-        __UUPSUpgradeable_init();
-        __Ownable_init(initialOwner);
-        __Pausable_init();
-        __ReentrancyGuard_init();
+    function checkUpkeep(bytes calldata) 
+        external 
+        view 
+        virtual 
+        override 
+        returns (bool upkeepNeeded, bytes memory performData) {
+        return (false, "");
     }
 
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    function performUpkeep(bytes calldata) external virtual override {}
 
     function pause() external onlyOwner {
         _pause();
