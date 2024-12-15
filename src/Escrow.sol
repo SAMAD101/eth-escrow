@@ -31,10 +31,7 @@ contract EscrowContract is BaseContract {
     }
 
     function initialize(address initialOwner) public initializer {
-        BaseContract.initialize();
-        __Pausable_init();
-        __Ownable_init(initialOwner);
-        __ReentrancyGuard_init();
+        BaseContract.initialize(initialOwner);
     }
 
     function createEscrow(
@@ -113,13 +110,5 @@ contract EscrowContract is BaseContract {
             escrow.isRefunded,
             escrow.createdAt
         );
-    }
-
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
     }
 }

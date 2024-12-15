@@ -5,7 +5,7 @@ import "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgrad
 
 import {BaseContract} from "./BaseContract.sol";
 
-contract ERC20EscrowContract is BaseContract {
+contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
     struct TokenEscrow {
         address payable sender;
         address payable receiver;
@@ -35,10 +35,7 @@ contract ERC20EscrowContract is BaseContract {
     }
 
     function initialize(address initialOwner) public initializer {
-        BaseContract.initialize();
-        __Pausable_init();
-        __Ownable_init(initialOwner);
-        __ReentrancyGuard_init();
+        BaseContract.initialize(initialOwner);
     }
 
     function createTokenEscrow(
@@ -130,13 +127,5 @@ contract ERC20EscrowContract is BaseContract {
             escrow.isRefunded,
             escrow.createdAt
         );
-    }
-
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
     }
 }
