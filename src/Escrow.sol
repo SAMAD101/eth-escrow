@@ -63,7 +63,7 @@ contract EscrowContract is BaseContract {
         return escrowId;
     }
 
-    function claimEscrow(bytes32 _escrowId) external nonReentrant {
+    function claimEscrow(bytes32 _escrowId) external nonReentrant whenNotPaused {
         Escrow storage escrow = escrows[_escrowId];
         require(msg.sender == escrow.receiver, "Only receiver can claim funds");
         require(!escrow.isClaimed && !escrow.isRefunded, "Escrow already settled");
@@ -76,7 +76,7 @@ contract EscrowContract is BaseContract {
         require(success, "Transfer to receiver failed");
     }
 
-    function refundEscrow(bytes32 _escrowId) external nonReentrant {
+    function refundEscrow(bytes32 _escrowId) external nonReentrant whenNotPaused {
         Escrow storage escrow = escrows[_escrowId];
         require(msg.sender == escrow.sender, "Only sender can get the refund");
         require(!escrow.isClaimed && !escrow.isRefunded, "Escrow already settled");
