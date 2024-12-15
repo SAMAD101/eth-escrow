@@ -54,7 +54,7 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
                 _tokenAddress,
                 _amount,
                 block.timestamp,
-                escrowCount++
+                unchecked {escrowCount++}
             )
         );
 

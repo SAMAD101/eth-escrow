@@ -46,7 +46,7 @@ contract EscrowContract is BaseContract {
                 _receiver,
                 msg.value,
                 block.timestamp,
-                escrowCount++
+                unchecked {escrowCount++}
             )
         );
 
@@ -84,7 +84,7 @@ contract EscrowContract is BaseContract {
 
         (bool success, ) = escrow.sender.call{value: escrow.amount}("");
         if (!success) revert TransferFailed();
-        
+
         escrow.isRefunded = true;
         emit EscrowRefunded(_escrowId);
     }
