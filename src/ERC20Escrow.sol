@@ -21,8 +21,8 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
 
     event TokenEscrowCreated(
         bytes32 indexed escrowId,
-        address indexed sender,
-        address indexed receiver,
+        address sender,
+        address receiver,
         address tokenAddress,
         uint256 amount
     );

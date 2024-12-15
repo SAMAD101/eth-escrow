@@ -18,8 +18,8 @@ contract EscrowContract is BaseContract {
 
     event EscrowCreated(
         bytes32 indexed escrowId,
-        address indexed sender,
-        address indexed receiver,
+        address sender,
+        address receiver,
         uint256 amount
     );
     event EscrowClaimed(bytes32 indexed escrowId);
