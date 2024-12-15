@@ -21,6 +21,7 @@ contract BaseContract is
     error OnlyReceiver();
     error OnlySender();
     error TransferFailed();
+    error TooEarly();
 
     uint256 constant public CLAIM_TIMEOUT = 30 days;
     
