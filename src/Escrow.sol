@@ -46,9 +46,11 @@ contract EscrowContract is BaseContract {
                 _receiver,
                 msg.value,
                 block.timestamp,
-                unchecked {escrowCount++}
+                escrowCount
             )
         );
+
+        unchecked {escrowCount++;}
 
         escrows[escrowId] = Escrow({
             sender: payable(msg.sender),

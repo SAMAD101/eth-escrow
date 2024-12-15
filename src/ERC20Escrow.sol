@@ -54,9 +54,11 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
                 _tokenAddress,
                 _amount,
                 block.timestamp,
-                unchecked {escrowCount++}
+                escrowCount
             )
         );
+
+        unchecked {escrowCount++;}
 
         // transferFrom tokens from sender to this contract
         ERC20Upgradeable token = ERC20Upgradeable(_tokenAddress);
@@ -97,8 +99,6 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
         if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
         if (escrow.amount == 0) revert InvalidEscrow();
 
-        
-        
         ERC20Upgradeable token = ERC20Upgradeable(escrow.tokenAddress);
         bool success = token.transfer(escrow.sender, escrow.amount);
         if (!success) revert TransferFailed();

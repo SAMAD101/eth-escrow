@@ -19,12 +19,9 @@ contract BaseContract is
     error OnlyReceiver();
     error OnlySender();
     error TransferFailed();
-    
-    bool internal initialized;
 
     function initialize(address initialOwner) public onlyInitializing {
         require(!initialized, "Contract instance has already been initialized");
-        initialized = true;
         __UUPSUpgradeable_init();
         __Ownable_init(initialOwner);
         __Pausable_init();
