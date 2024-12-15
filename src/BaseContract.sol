@@ -5,12 +5,14 @@ import "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/UUPSUpgrade
 import "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "lib/openzeppelin-contracts-upgradeable/contracts/utils/PausableUpgradeable.sol";
 import "lib/openzeppelin-contracts-upgradeable/contracts/utils/ReentrancyGuardUpgradeable.sol";
+import "lib/chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
 contract BaseContract is 
     UUPSUpgradeable,
     OwnableUpgradeable,
     PausableUpgradeable,
-    ReentrancyGuardUpgradeable
+    ReentrancyGuardUpgradeable,
+    AutomationCompatibleUpgradeable
 {
     error InvalidAddress();
     error ZeroAmount();
@@ -19,6 +21,8 @@ contract BaseContract is
     error OnlyReceiver();
     error OnlySender();
     error TransferFailed();
+
+    uint256 constant public CLAIM_TIMEOUT = 30 days;
 
     function initialize(address initialOwner) public onlyInitializing {
         require(!initialized, "Contract instance has already been initialized");
