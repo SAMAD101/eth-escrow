@@ -43,9 +43,9 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
         address _tokenAddress,
         uint256 _amount
     ) external nonReentrant whenNotPaused returns (bytes32) {
-        require(_receiver != address(0), "Invalid receiver address");
-        require(_tokenAddress != address(0), "Invalid token address");
-        require(_amount > 0, "Amount must be greater than 0");
+        if (_receiver == address(0)) revert InvalidAddress();
+        if (_tokenAddress == address(0)) revert InvalidAddress();
+        if (_amount == 0) revert ZeroAmount();
 
         bytes32 escrowId = keccak256(
             abi.encodePacked(
@@ -60,7 +60,8 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
 
         // transferFrom tokens from sender to this contract
         ERC20Upgradeable token = ERC20Upgradeable(_tokenAddress);
-        token.transferFrom(msg.sender, address(this), _amount);
+        bool success = token.transferFrom(msg.sender, address(this), _amount);
+        if (!success) revert TransferFailed();
 
         escrows[escrowId] = TokenEscrow({
             sender: payable(msg.sender),
@@ -78,29 +79,31 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
 
     function claimTokenEscrow(bytes32 _escrowId) external nonReentrant whenNotPaused {
         TokenEscrow storage escrow = escrows[_escrowId];
-        require(msg.sender == escrow.receiver, "Only receiver can claim tokens");
-        require(!escrow.isClaimed && !escrow.isRefunded, "Escrow already settled");
-        require(escrow.amount > 0, "Invalid escrow");
-
-        escrow.isClaimed = true;
+        if (msg.sender != escrow.receiver) revert OnlyReceiver();
+        if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
+        if (escrow.amount == 0) revert InvalidEscrow();
         
         ERC20Upgradeable token = ERC20Upgradeable(escrow.tokenAddress);
-        token.transfer(escrow.receiver, escrow.amount);
-        
+        bool success = token.transfer(escrow.receiver, escrow.amount);
+        if (!success) revert TransferFailed();
+
+        escrow.isClaimed = true;
         emit TokenEscrowClaimed(_escrowId);
     }
 
     function refundTokenEscrow(bytes32 _escrowId) external nonReentrant whenNotPaused {
         TokenEscrow storage escrow = escrows[_escrowId];
-        require(msg.sender == escrow.sender, "Only sender can get the refund");
-        require(!escrow.isClaimed && !escrow.isRefunded, "Escrow already settled");
-        require(escrow.amount > 0, "Invalid escrow");
+        if (msg.sender != escrow.sender) revert OnlySender();
+        if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
+        if (escrow.amount == 0) revert InvalidEscrow();
 
-        escrow.isRefunded = true;
+        
         
         ERC20Upgradeable token = ERC20Upgradeable(escrow.tokenAddress);
-        token.transfer(escrow.sender, escrow.amount);
-        
+        bool success = token.transfer(escrow.sender, escrow.amount);
+        if (!success) revert TransferFailed();
+
+        escrow.isRefunded = true;
         emit TokenEscrowRefunded(_escrowId);
     }
 

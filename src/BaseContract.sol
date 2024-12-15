@@ -12,6 +12,14 @@ contract BaseContract is
     PausableUpgradeable,
     ReentrancyGuardUpgradeable
 {
+    error InvalidAddress();
+    error ZeroAmount();
+    error AlreadySettled();
+    error InvalidEscrow();
+    error OnlyReceiver();
+    error OnlySender();
+    error TransferFailed();
+    
     bool internal initialized;
 
     function initialize(address initialOwner) public onlyInitializing {

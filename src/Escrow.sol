@@ -37,8 +37,8 @@ contract EscrowContract is BaseContract {
     function createEscrow(
         address payable _receiver
     ) external payable nonReentrant whenNotPaused returns (bytes32) {
-        require(_receiver != address(0), "Invalid receiver address");
-        require(msg.value > 0, "Amount must be greater than 0");
+        if (_receiver == address(0)) revert InvalidAddress();
+        if (msg.value == 0) revert ZeroAmount();
 
         bytes32 escrowId = keccak256(
             abi.encodePacked(
@@ -65,28 +65,28 @@ contract EscrowContract is BaseContract {
 
     function claimEscrow(bytes32 _escrowId) external nonReentrant whenNotPaused {
         Escrow storage escrow = escrows[_escrowId];
-        require(msg.sender == escrow.receiver, "Only receiver can claim funds");
-        require(!escrow.isClaimed && !escrow.isRefunded, "Escrow already settled");
-        require(escrow.amount > 0, "Invalid escrow");
+        if (msg.sender != escrow.receiver) revert OnlyReceiver();
+        if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
+        if (escrow.amount == 0) revert InvalidEscrow();
+
+        (bool success, ) = escrow.receiver.call{value: escrow.amount}("");
+        if (!success) revert TransferFailed();
 
         escrow.isClaimed = true;
         emit EscrowClaimed(_escrowId);
-
-        (bool success, ) = escrow.receiver.call{value: escrow.amount}("");
-        require(success, "Transfer to receiver failed");
     }
 
     function refundEscrow(bytes32 _escrowId) external nonReentrant whenNotPaused {
         Escrow storage escrow = escrows[_escrowId];
-        require(msg.sender == escrow.sender, "Only sender can get the refund");
-        require(!escrow.isClaimed && !escrow.isRefunded, "Escrow already settled");
-        require(escrow.amount > 0, "Invalid escrow");
-
-        escrow.isRefunded = true;
-        emit EscrowRefunded(_escrowId);
+        if (msg.sender != escrow.sender) revert OnlySender();
+        if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
+        if (escrow.amount == 0) revert InvalidEscrow();
 
         (bool success, ) = escrow.sender.call{value: escrow.amount}("");
-        require(success, "Transfer to sender failed");
+        if (!success) revert TransferFailed();
+        
+        escrow.isRefunded = true;
+        emit EscrowRefunded(_escrowId);
     }
 
     function getEscrow(bytes32 _escrowId) 
