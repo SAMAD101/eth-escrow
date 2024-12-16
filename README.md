@@ -32,7 +32,7 @@ git clone https://github.com/SAMAD101/eth-escrow.git
 3. Build and deploy
 
 ```bash
-forge script script/DefenderScript.s.sol --force --rpc-url $SEPOLIA_RPC_URL
+forge script script/DefenderScript.s.sol --force --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```
 
 ## Tests

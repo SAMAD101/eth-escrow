@@ -21,15 +21,19 @@ contract DefenderScript is Script {
             "Escrow.sol:EscrowContract",
             abi.encodeCall(EscrowContract.initialize, (payable(msg.sender)))
         );
-
         console.log("Deployed ETH Escrow proxy to address", ethEscrowProxy);
+
+        address ethEscrowImpl = Upgrades.getImplementationAddress(ethEscrowProxy);
+        console.log("ETH Escrow implementation address", ethEscrowImpl);
 
         // Deploy ERC20 Escrow
         address erc20EscrowProxy = Upgrades.deployUUPSProxy(
             "ERC20Escrow.sol:ERC20EscrowContract",
             abi.encodeCall(ERC20EscrowContract.initialize, (payable(msg.sender)))
         );
-
         console.log("Deployed ERC20 Escrow proxy to address", erc20EscrowProxy);
+
+        address erc20EscrowImpl = Upgrades.getImplementationAddress(erc20EscrowProxy);
+        console.log("ERC20 Escrow implementation address", erc20EscrowImpl);
     }
 }
