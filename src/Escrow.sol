@@ -117,6 +117,7 @@ contract EscrowContract is BaseContract {
         if (msg.sender != escrow.receiver) revert OnlyReceiver();
         if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
         if (escrow.amount == 0) revert InvalidEscrow();
+        if (block.timestamp > escrow.createdAt + CLAIM_TIMEOUT) revert TooLate();
 
         (bool success, ) = escrow.receiver.call{value: escrow.amount}("");
         if (!success) revert TransferFailed();

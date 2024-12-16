@@ -132,6 +132,7 @@ contract ERC20EscrowContract is BaseContract, ERC20Upgradeable {
         if (msg.sender != escrow.receiver) revert OnlyReceiver();
         if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
         if (escrow.amount == 0) revert InvalidEscrow();
+        if (block.timestamp > escrow.createdAt + CLAIM_TIMEOUT) revert TooLate();
         
         ERC20Upgradeable token = ERC20Upgradeable(escrow.tokenAddress);
         bool success = token.transfer(escrow.receiver, escrow.amount);
