@@ -28,6 +28,7 @@ git clone https://github.com/SAMAD101/eth-escrow.git
 
 - SEPOLIA_RPC_URL
 - PRIVATE_KEY
+- ETHERSCAN_API_KEY
 
 3. Build and deploy
 
@@ -35,6 +36,29 @@ git clone https://github.com/SAMAD101/eth-escrow.git
 forge script script/DefenderScript.s.sol --force --rpc-url $SEPOLIA_RPC_URL --broadcast
 ```
 
+4. Verify contract
+
+```bash
+forge verify-contract 0x35e72418cD57d1dF7129291EE4E23Dc6e1aB6d6D src/Escrow.sol:EscrowContract \                                                          [19:03:35]
+--watch \
+--chain-id 11155111 \
+--etherscan-api-key $ETHERSCAN_API_KEY
+```
+
+5. Make upkeep on Chainlink for the `Escrow` and `ERC20Escrow` contracts for the automated refunds.
+
+Go to https://automation.chain.link/ and register a new Upkeep (Time-based) for both of the contracts.
+
 ## Tests
 
-to be added...
+1. Build
+
+```bash
+forge build
+```
+
+2. Run tests
+
+```bash
+forge test
+```
