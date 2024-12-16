@@ -90,7 +90,6 @@ contract EscrowContract is BaseContract {
         bytes32 escrowId = abi.decode(performData, (bytes32));
         Escrow storage escrow = escrows[escrowId];
 
-        if (msg.sender != escrow.sender) revert OnlySender();
         if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
         if (escrow.amount == 0) revert InvalidEscrow();
         if (block.timestamp <= escrow.createdAt + CLAIM_TIMEOUT) revert TooEarly();
