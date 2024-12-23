@@ -95,6 +95,103 @@ contract EscrowTest is Test {
         vm.stopPrank();
     }
 
+    function test_ClaimPartialEscrowHalf() public {
+        // Create escrow first
+        vm.startPrank(sender);
+        bytes32 escrowId = escrow.createEscrow{value: ESCROW_AMOUNT}(receiver);
+        vm.stopPrank();
+
+        // Switch to receiver context and claim
+        vm.startPrank(receiver);
+        uint256 balanceBefore = receiver.balance;
+        
+        escrow.claimPartialEscrow(escrowId, ESCROW_AMOUNT / 2);
+        
+        assertEq(receiver.balance, balanceBefore + ESCROW_AMOUNT / 2);
+        
+        // Verify escrow is claimed
+        (,,, bool isClaimed,,) = escrow.getEscrow(escrowId);
+        assertFalse(isClaimed);
+        
+        vm.stopPrank();
+    }
+
+    function test_ClaimPartialEscrowFull() public {
+        // Create escrow first
+        vm.startPrank(sender);
+        bytes32 escrowId = escrow.createEscrow{value: ESCROW_AMOUNT}(receiver);
+        vm.stopPrank();
+
+        // Switch to receiver context and claim
+        vm.startPrank(receiver);
+        uint256 balanceBefore = receiver.balance;
+        
+        escrow.claimPartialEscrow(escrowId, ESCROW_AMOUNT);
+        
+        assertEq(receiver.balance, balanceBefore + ESCROW_AMOUNT);
+        
+        // Verify escrow is claimed
+        (,,, bool isClaimed,,) = escrow.getEscrow(escrowId);
+        assertTrue(isClaimed);
+        
+        vm.stopPrank();
+    }
+
+    function test_RefundAfterClaimPartialEscrowHalf() public {
+        // Create escrow
+        vm.startPrank(sender);
+        bytes32 escrowId = escrow.createEscrow{value: ESCROW_AMOUNT}(receiver);
+        vm.stopPrank();
+
+        vm.startPrank(receiver);
+        uint256 balanceBefore = receiver.balance;
+        
+        escrow.claimPartialEscrow(escrowId, ESCROW_AMOUNT / 2);
+        
+        assertEq(receiver.balance, balanceBefore + ESCROW_AMOUNT / 2);
+        vm.stopPrank();
+
+        // Warp time past timeout
+        vm.warp(block.timestamp + 31 days);
+
+        // Verify upkeep is needed
+        (bool upkeepNeeded, bytes memory performData) = escrow.checkUpkeep("");
+        assertTrue(upkeepNeeded);
+        
+        // Perform upkeep (simulate Chianlink keeper)
+        vm.prank(address(0x123));
+        escrow.performUpkeep(performData);
+
+        // Verify escrow is refunded
+        (,,, bool isClaimed, bool isRefunded,) = escrow.getEscrow(escrowId);
+        assertFalse(isClaimed);
+        assertTrue(isRefunded);
+    }
+
+    function test_RefundAfterClaimPartialEscrowFull() public {
+        // Create escrow
+        vm.startPrank(sender);
+        bytes32 escrowId = escrow.createEscrow{value: ESCROW_AMOUNT}(receiver);
+        vm.stopPrank();
+
+        // Claim the full amount using claimPartialEscrow
+        vm.startPrank(receiver);
+        escrow.claimPartialEscrow(escrowId, ESCROW_AMOUNT);
+        vm.stopPrank();
+
+        // Warp time past timeout
+        vm.warp(block.timestamp + 31 days);
+
+        // Verify upkeep is needed
+        (bool upkeepNeeded,) = escrow.checkUpkeep("");
+        assertFalse(upkeepNeeded); // No upkeep needed since escrow is already claimed
+
+        // Verify escrow is claimed
+        (,,, bool isClaimed, bool isRefunded,) = escrow.getEscrow(escrowId);
+        assertTrue(isClaimed);
+        assertFalse(isRefunded);
+    }
+
     function test_RefundExpiredEscrow() public {
         // Create escrow
         vm.startPrank(sender);

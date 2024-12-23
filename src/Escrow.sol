@@ -135,6 +135,36 @@ contract EscrowContract is BaseContract {
         emit EscrowClaimed(_escrowId);
     }
 
+    function claimPartialEscrow(bytes32 _escrowId, uint256 _amount) external nonReentrant whenNotPaused {
+        Escrow storage escrow = escrows[_escrowId];
+        if (msg.sender != escrow.receiver) revert OnlyReceiver();
+        if (escrow.isClaimed || escrow.isRefunded) revert AlreadySettled();
+        if (escrow.amount == 0) revert InvalidEscrow();
+        if (_amount > escrow.amount) revert AmountExceedsBalance();
+        if (block.timestamp > escrow.createdAt + CLAIM_TIMEOUT) revert TooLate();
+
+        (bool success, ) = escrow.receiver.call{value: _amount}("");
+        if (!success) revert TransferFailed();
+
+        escrow.amount -= _amount;
+
+        if (escrow.amount == 0) {
+            // remove escrow from activeEscrows
+            uint256 index = escrowIdToIndex[_escrowId];
+            uint256 lastIndex = activeEscrows.length - 1;
+            if (index != lastIndex) {
+                bytes32 lastEscrowId = activeEscrows[lastIndex];
+                activeEscrows[index] = lastEscrowId;
+                escrowIdToIndex[lastEscrowId] = index;
+            }
+            activeEscrows.pop();
+
+            escrow.isClaimed = true;
+        }
+
+        emit EscrowClaimed(_escrowId);
+    }
+
     function getEscrow(bytes32 _escrowId) 
         external 
         view 

@@ -23,6 +23,7 @@ contract BaseContract is
     error TransferFailed();
     error TooEarly();
     error TooLate();
+    error AmountExceedsBalance();
 
     uint256 constant public CLAIM_TIMEOUT = 30 days;
     
