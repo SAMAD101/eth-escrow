@@ -215,7 +215,7 @@ contract EscrowTest is Test {
         assertTrue(isRefunded);
     }
 
-    function testFail_ClaimExpiredEscrow() public {
+    function test_ClaimExpiredEscrow() public {
         // Create escrow
         vm.startPrank(sender);
         bytes32 escrowId = escrow.createEscrow{value: ESCROW_AMOUNT}(receiver);
@@ -226,10 +226,11 @@ contract EscrowTest is Test {
 
         // Try to claim (should fail)
         vm.prank(receiver);
+        vm.expectRevert();
         escrow.claimEscrow(escrowId);
     }
 
-    function testFail_ReclaimEscrow() public {
+    function test_ReclaimEscrow() public {
         // Create and claim escrow
         vm.prank(sender);
         bytes32 escrowId = escrow.createEscrow{value: ESCROW_AMOUNT}(receiver);
@@ -237,8 +238,9 @@ contract EscrowTest is Test {
         vm.prank(receiver);
         escrow.claimEscrow(escrowId);
         
-        // Try to claim again (should fail)
+        // Try to claim again and expect it to revert
         vm.prank(receiver);
+        vm.expectRevert();
         escrow.claimEscrow(escrowId);
     }
 }

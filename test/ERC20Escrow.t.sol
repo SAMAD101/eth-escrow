@@ -142,7 +142,7 @@ contract ERC20EscrowTest is Test {
         assertEq(token.balanceOf(sender), senderBalanceBefore + ESCROW_AMOUNT);
     }
 
-    function testFail_ClaimExpiredTokenEscrow() public {
+    function test_ClaimExpiredTokenEscrow() public {
         // Create escrow
         vm.startPrank(sender);
         token.approve(address(escrow), ESCROW_AMOUNT);
@@ -154,10 +154,11 @@ contract ERC20EscrowTest is Test {
 
         // Try to claim (should fail)
         vm.prank(receiver);
+        vm.expectRevert();
         escrow.claimTokenEscrow(escrowId);
     }
 
-    function testFail_ReclaimTokenEscrow() public {
+    function test_ReclaimTokenEscrow() public {
         // Create and claim escrow
         vm.startPrank(sender);
         token.approve(address(escrow), ESCROW_AMOUNT);
@@ -169,6 +170,7 @@ contract ERC20EscrowTest is Test {
         
         // Try to claim again (should fail)
         vm.prank(receiver);
+        vm.expectRevert();
         escrow.claimTokenEscrow(escrowId);
     }
 }
